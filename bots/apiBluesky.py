@@ -15,7 +15,7 @@ logger = logging.getLogger()
 class APIBluesky():
     def __init__(self, username, password, test=True):
 
-        self.ATP_HOST = "https://bsky.social"
+        self.ATP_HOST = "https://eurosky.social"
         self.ATP_AUTH_TOKEN = ""
         self.DID = ""
         self.USERNAME = username
