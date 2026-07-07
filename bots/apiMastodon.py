@@ -15,7 +15,6 @@
 #!/usr/bin/env python
 
 
-import tweepy
 import logging
 import time
 from mastodon import Mastodon
