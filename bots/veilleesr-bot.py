@@ -26,7 +26,6 @@ import traceback
 import vbconfig
 import mdconfig
 from jorf import JORF
-from apiTwitter import APITwitter
 from apiMastodon import APIMastodon
 from apiBluesky import APIBluesky
 
@@ -39,8 +38,6 @@ config = vbconfig.Config.load()
 logger.info(f"Retrieving mdconfig")
 mdc = mdconfig.get_mdconfig(config.get("mdconfig_url"))
 
-apitwitter = None
-apitwitter_jg = None
 apimasto = None
 apimasto_jg = None
 apibsky = None
@@ -55,12 +52,10 @@ def veilleesr():
             if vpost['author'] == 'juliengossa.cpesr.fr':
                 vthread = apibsky.getVThread(vpost['raw'])
                 apimasto_jg.postVThread(vthread)
-                if apitwitter_jg: apitwitter_jg.postVThread(vthread)
             else:
                 if "#veilleesr" not in vpost['text'].lower(): continue
                 if not vpost['card']: continue
                 apimasto.importVPost(vpost)
-                if apitwitter: apitwitter.importVPost(vpost)
         except Exception as e:
             logger.error("Error posting vpost "+str(e))
             traceback.print_exc()
@@ -76,7 +71,6 @@ def veilleesr():
     for vpost in mav:
         try:
             apibsky.importVPost(vpost)
-            if apitwitter: apitwitter.importVPost(vpost)
         except Exception as e:
             logger.error("Error posting vpost "+str(e))
 
@@ -100,16 +94,11 @@ def postJorf(test=False):
         apimasto.postVThread(joposts)
     except:
         logger.error("Error posting thread on Masto")
-    try:
-        if apitwitter: apitwitter.postVThread(joposts)
-    except:
-        logger.error("Error posting thread on X")
 
 
 def broadcast(vpost):
     apibsky.postVPost(vpost)
     apimasto.postVPost(vpost)
-    if apitwitter: apitwitter.postVPost(vpost)
 
 def bskyrecap():
     tops = apibsky.postRecap()
@@ -149,32 +138,10 @@ def main():
 
     args = parser.parse_args()
 
-    global apitwitter
-    global apitwitter_jg
     global apimasto
     global apimasto_jg
     global apibsky
     config.test = args.test
-
-    # try:
-    #     apitwitter = APITwitter(
-    #         config.get("TWITTER_CONSUMER_KEY"),
-    #         config.get("TWITTER_CONSUMER_SECRET"),
-    #         config.get("TWITTER_ACCESS_TOKEN"),
-    #         config.get("TWITTER_ACCESS_TOKEN_SECRET"),
-    #         config.get("TWITTER_BEARER_TOKEN"),
-    #         args.test
-    #         )
-
-    #     apitwitter_jg = APITwitter(
-    #         config.get("TWITTERJG_CONSUMER_KEY"),
-    #         config.get("TWITTERJG_CONSUMER_SECRET"),
-    #         config.get("TWITTERJG_ACCESS_TOKEN"),
-    #         config.get("TWITTERJG_ACCESS_TOKEN_SECRET"),
-    #         config.get("TWITTERJG_BEARER_TOKEN"),
-    #         args.test
-    #         )
-    # except Exception as e: logger.error(str(e))
 
     apimasto = APIMastodon(
         config.get("MASTODON_ID"),
@@ -193,8 +160,7 @@ def main():
         )
 
     logger.info("Create bluesky api")
-    apibsky = APIBluesky(config.get("BSKY_USERNAME"),config.get("BSKY_PASSWORD"),args.test)
-
+    apibsky = APIBluesky(config.get("BSKY_BASE_URL"), config.get("BSKY_USERNAME"), config.get("BSKY_PASSWORD"),args.test)
 
     if args.veilleesr:
         veilleesr()
@@ -214,41 +180,11 @@ def main():
         logger.info("Post data "+vpost['text'])
         broadcast(vpost)
 
-
-    # if args.tweetmd is not None:
-    #     dataTweets = mdconfig.get_datamd(args.tweetmd[0])
-    #     twth = None
-    #     sleeptime = 0
-    #     for dt in dataTweets:
-    #         if twth != dt['thread']:
-    #             twid = dt['twurl']
-    #             twth = dt['thread']
-    #             time.sleep(sleeptime)
-    #         tweet = autotweet.postData(dt, in_reply_to = twid)
-    #         #print(str(dt) + " : " + str(twid))
-    #         twid = tweet.id
-    #         #twid = int(twid) + 1
-    #         sleeptime = 1
-
-
-        # id = None
-        # for dt in dataTweets:
-        #     toot = autotoot.postData(dt, in_reply_to = id)
-        #     id = toot.id
-
-
     if args.jorf:
         postJorf(test=args.test)
 
     if args.bskydnszone:
         bskydnszone()
-
-    # if args.jorfrecap:
-        # twid = self.jorfTweeter(self.config.last_recap, recap=True)
-        # if twid is not None:
-        #     self.config.retweets['jorf'] = twid
-        #     self.config.reset_last_recap()
-
 
 
     config.save()

@@ -14,10 +14,10 @@
 
 #!/usr/bin/env python
 
-import tweepy
-import json
+import urllib3
 import os
 import imgkit
+import json
 from io import StringIO
 from datetime import datetime
 import vbconfig
@@ -26,7 +26,7 @@ class JORF:
     def __init__(self, piste_client_id, piste_client_secret, wk_path):
         self.piste_client_id = piste_client_id
         self.piste_client_secret = piste_client_secret
-        self.pm = tweepy.streaming.urllib3.PoolManager()
+        self.pm = urllib3.PoolManager()
         self.get_access_token()
         self.jorf = None
         self.sommaire = None

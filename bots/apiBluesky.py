@@ -13,9 +13,9 @@ import vbconfig
 logger = logging.getLogger()
 
 class APIBluesky():
-    def __init__(self, username, password, test=True):
+    def __init__(self, host,username, password, test=True):
 
-        self.ATP_HOST = "https://eurosky.social"
+        self.ATP_HOST = host
         self.ATP_AUTH_TOKEN = ""
         self.DID = ""
         self.USERNAME = username
@@ -497,7 +497,7 @@ class APIBluesky():
                     try:
                         mimetype = mimetypes.guess_type(img_url)[0]
                         blob_resp = requests.post(
-                            "https://bsky.social/xrpc/com.atproto.repo.uploadBlob",
+                            self.ATP_HOST+"/xrpc/com.atproto.repo.uploadBlob",
                             headers={
                                 "Content-Type": mimetype,
                                 "Authorization": "Bearer " + self.ATP_AUTH_TOKEN,
@@ -802,8 +802,8 @@ class APIBluesky():
         dnsz=""
 
         handles = \
-            { f['did']:f['handle'].split(".")[0] for f in follows if 'cpesr.fr' in f['handle'] } | \
-            { f['did']:f['handle'].split(".")[0] for f in follows if 'bsky.social' in f['handle'] }
+            { f['did']:f['handle'].split(".")[0] for f in follows if 'cpesr.fr' in f['handle'] } # | \
+            #{ f['did']:f['handle'].split(".")[0] for f in follows if 'bsky.social' in f['handle'] }
             #{ f['did']:f['displayName'] for f in follows if 'handle.invalid' in f['handle'] } | \
 
         for did in handles:
@@ -874,18 +874,18 @@ class APIBluesky():
 
 if __name__ == "__main__":
     config = vbconfig.Config.load()
-    apibsky = APIBluesky(config.get("BSKY_USERNAME"),config.get("BSKY_PASSWORD"),test=True)
+    apibsky = APIBluesky(config.get("BSKY_BASE_URL"),config.get("BSKY_USERNAME"),config.get("BSKY_PASSWORD"),test=True)
 
     ## Update starterpack
     # apibsky.updateStarterPack()
 
     ## DNSZone
-    dns = apibsky.getDNSZone()
-    print(dns)
+    # dns = apibsky.getDNSZone()
+    # print(dns)
 
  
     ## Test getList
-    # items = apibsky.getList(apibsky.config['url_list_esr'])
+    # items = apibsky.getList(apibsky.config['url_list_pack'])
     # print(items)
 
     ## Test certifieds
@@ -893,7 +893,8 @@ if __name__ == "__main__":
     # print([ a['handle'] for a in actors ])
 
     ## Test updateTops
-    # v = apibsky.getVeille()
+    v = apibsky.getVeille()
+    # print(v)
     # apibsky.updateTops(v)
 
     ## Test recap

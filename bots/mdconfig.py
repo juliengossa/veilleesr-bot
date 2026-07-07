@@ -13,7 +13,7 @@
 # copies or substantial portions of the Software.
 
 
-from tweepy.streaming import urllib3
+import urllib3
 from os import path
 
 def get_mdconfig(url):
